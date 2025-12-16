@@ -1,4 +1,4 @@
-import { Code2, Eye, Copy, Download, Check } from "lucide-react";
+import { Code2, Eye, Copy, Download, Check, Sparkles } from "lucide-react";
 import { useState } from "react";
 
 interface OutputPreviewProps {
@@ -16,6 +16,18 @@ const OutputPreview = ({ code, isLoading }: OutputPreviewProps) => {
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const handleDownload = () => {
+    const blob = new Blob([code], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'generated-code.tsx';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
   if (!code && !isLoading) {
     return (
       <div className="glass rounded-2xl p-12 text-center">
@@ -30,7 +42,7 @@ const OutputPreview = ({ code, isLoading }: OutputPreviewProps) => {
     );
   }
 
-  if (isLoading) {
+  if (isLoading && !code) {
     return (
       <div className="glass rounded-2xl p-12 text-center">
         <div className="w-16 h-16 rounded-2xl bg-primary/20 mx-auto mb-4 flex items-center justify-center animate-pulse">
@@ -74,12 +86,17 @@ const OutputPreview = ({ code, isLoading }: OutputPreviewProps) => {
         <div className="flex gap-2">
           <button
             onClick={handleCopy}
-            className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-muted-foreground hover:bg-secondary transition-all"
+            disabled={!code}
+            className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-muted-foreground hover:bg-secondary transition-all disabled:opacity-50"
           >
             {copied ? <Check className="w-4 h-4 text-green-500" /> : <Copy className="w-4 h-4" />}
             {copied ? "Copied!" : "Copy"}
           </button>
-          <button className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-muted-foreground hover:bg-secondary transition-all">
+          <button 
+            onClick={handleDownload}
+            disabled={!code}
+            className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-muted-foreground hover:bg-secondary transition-all disabled:opacity-50"
+          >
             <Download className="w-4 h-4" />
             Download
           </button>
@@ -89,20 +106,28 @@ const OutputPreview = ({ code, isLoading }: OutputPreviewProps) => {
       {/* Content */}
       <div className="p-4 max-h-[500px] overflow-auto">
         {activeTab === "code" ? (
-          <pre className="font-mono text-sm text-foreground whitespace-pre-wrap">
-            <code>{code}</code>
-          </pre>
+          <div className="relative">
+            {isLoading && (
+              <div className="absolute top-2 right-2 flex items-center gap-2 px-3 py-1 rounded-full bg-primary/20 text-primary text-xs">
+                <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+                Generating...
+              </div>
+            )}
+            <pre className="font-mono text-sm text-foreground whitespace-pre-wrap">
+              <code>{code}</code>
+            </pre>
+          </div>
         ) : (
-          <div className="bg-background rounded-lg p-4 min-h-[300px]">
-            <p className="text-muted-foreground text-center">Preview akan tersedia setelah implementasi backend</p>
+          <div className="bg-background rounded-lg p-4 min-h-[300px] flex items-center justify-center">
+            <p className="text-muted-foreground text-center">
+              Preview tersedia untuk kode HTML/CSS. <br />
+              Untuk React components, copy kode dan jalankan di project Anda.
+            </p>
           </div>
         )}
       </div>
     </div>
   );
 };
-
-// Add Sparkles import
-import { Sparkles } from "lucide-react";
 
 export default OutputPreview;
