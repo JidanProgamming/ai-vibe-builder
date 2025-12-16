@@ -1,14 +1,83 @@
-import { Code2, Eye, Copy, Download, Check, Sparkles } from "lucide-react";
-import { useState } from "react";
+import { Code2, Eye, Copy, Download, Check, Sparkles, Maximize2, Minimize2 } from "lucide-react";
+import { useState, useMemo } from "react";
 
 interface OutputPreviewProps {
   code: string;
   isLoading: boolean;
 }
 
+const extractHtmlFromCode = (code: string): string => {
+  // Try to extract HTML content from the generated code
+  
+  // Check if it's a complete HTML document
+  if (code.includes('<!DOCTYPE html>') || code.includes('<html')) {
+    const htmlMatch = code.match(/<!DOCTYPE html>[\s\S]*<\/html>/i) || 
+                      code.match(/<html[\s\S]*<\/html>/i);
+    if (htmlMatch) return htmlMatch[0];
+  }
+
+  // Check for HTML code blocks in markdown
+  const htmlBlockMatch = code.match(/```html\n([\s\S]*?)```/);
+  if (htmlBlockMatch) return htmlBlockMatch[1];
+
+  // Check for JSX/React component and convert to basic HTML preview
+  const jsxMatch = code.match(/return\s*\(\s*([\s\S]*?)\s*\);?\s*};?\s*$/m);
+  if (jsxMatch) {
+    let jsx = jsxMatch[1];
+    // Convert className to class
+    jsx = jsx.replace(/className=/g, 'class=');
+    // Remove React-specific attributes
+    jsx = jsx.replace(/\{[^}]*\}/g, '');
+    
+    return generatePreviewHtml(jsx);
+  }
+
+  // If code contains JSX-like structure, try to render it
+  if (code.includes('<div') || code.includes('<section') || code.includes('<header')) {
+    const jsxContent = code.match(/<(?:div|section|header|main|footer|nav|article)[\s\S]*$/);
+    if (jsxContent) {
+      let content = jsxContent[0];
+      content = content.replace(/className=/g, 'class=');
+      content = content.replace(/\{[^}]*\}/g, '');
+      return generatePreviewHtml(content);
+    }
+  }
+
+  return '';
+};
+
+const generatePreviewHtml = (content: string): string => {
+  return `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: system-ui, -apple-system, sans-serif;
+    }
+  </style>
+</head>
+<body>
+  ${content}
+</body>
+</html>
+  `;
+};
+
 const OutputPreview = ({ code, isLoading }: OutputPreviewProps) => {
-  const [activeTab, setActiveTab] = useState<"preview" | "code">("code");
+  const [activeTab, setActiveTab] = useState<"preview" | "code">("preview");
   const [copied, setCopied] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+
+  const previewHtml = useMemo(() => {
+    if (!code) return '';
+    return extractHtmlFromCode(code);
+  }, [code]);
 
   const handleCopy = () => {
     navigator.clipboard.writeText(code);
@@ -60,19 +129,15 @@ const OutputPreview = ({ code, isLoading }: OutputPreviewProps) => {
   }
 
   return (
-    <div className="glass rounded-2xl overflow-hidden">
+    <div className={`glass rounded-2xl overflow-hidden transition-all ${isFullscreen ? 'fixed inset-4 z-50' : ''}`}>
+      {/* Fullscreen backdrop */}
+      {isFullscreen && (
+        <div className="fixed inset-0 bg-background/80 backdrop-blur-sm -z-10" onClick={() => setIsFullscreen(false)} />
+      )}
+
       {/* Tabs */}
       <div className="flex items-center justify-between px-4 py-3 border-b border-border/50">
         <div className="flex gap-2">
-          <button
-            onClick={() => setActiveTab("code")}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-              activeTab === "code" ? "bg-primary/20 text-primary" : "text-muted-foreground hover:bg-secondary"
-            }`}
-          >
-            <Code2 className="w-4 h-4" />
-            Kode
-          </button>
           <button
             onClick={() => setActiveTab("preview")}
             className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
@@ -82,8 +147,23 @@ const OutputPreview = ({ code, isLoading }: OutputPreviewProps) => {
             <Eye className="w-4 h-4" />
             Preview
           </button>
+          <button
+            onClick={() => setActiveTab("code")}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+              activeTab === "code" ? "bg-primary/20 text-primary" : "text-muted-foreground hover:bg-secondary"
+            }`}
+          >
+            <Code2 className="w-4 h-4" />
+            Kode
+          </button>
         </div>
         <div className="flex gap-2">
+          <button
+            onClick={() => setIsFullscreen(!isFullscreen)}
+            className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-muted-foreground hover:bg-secondary transition-all"
+          >
+            {isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
+          </button>
           <button
             onClick={handleCopy}
             disabled={!code}
@@ -104,25 +184,49 @@ const OutputPreview = ({ code, isLoading }: OutputPreviewProps) => {
       </div>
 
       {/* Content */}
-      <div className="p-4 max-h-[500px] overflow-auto">
-        {activeTab === "code" ? (
-          <div className="relative">
-            {isLoading && (
-              <div className="absolute top-2 right-2 flex items-center gap-2 px-3 py-1 rounded-full bg-primary/20 text-primary text-xs">
-                <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-                Generating...
+      <div className={`${isFullscreen ? 'h-[calc(100%-60px)]' : 'h-[500px]'} overflow-hidden`}>
+        {activeTab === "preview" ? (
+          <div className="h-full bg-white rounded-b-lg overflow-hidden">
+            {previewHtml ? (
+              <iframe
+                srcDoc={previewHtml}
+                className="w-full h-full border-0"
+                sandbox="allow-scripts"
+                title="Preview"
+              />
+            ) : (
+              <div className="h-full flex items-center justify-center bg-muted/30">
+                <div className="text-center p-8">
+                  <Eye className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                  <p className="text-muted-foreground">
+                    {isLoading ? (
+                      <>
+                        <span className="flex items-center justify-center gap-2">
+                          <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+                          Generating preview...
+                        </span>
+                      </>
+                    ) : (
+                      "Preview akan ditampilkan setelah kode selesai di-generate"
+                    )}
+                  </p>
+                </div>
               </div>
             )}
-            <pre className="font-mono text-sm text-foreground whitespace-pre-wrap">
-              <code>{code}</code>
-            </pre>
           </div>
         ) : (
-          <div className="bg-background rounded-lg p-4 min-h-[300px] flex items-center justify-center">
-            <p className="text-muted-foreground text-center">
-              Preview tersedia untuk kode HTML/CSS. <br />
-              Untuk React components, copy kode dan jalankan di project Anda.
-            </p>
+          <div className="h-full overflow-auto p-4">
+            <div className="relative">
+              {isLoading && (
+                <div className="absolute top-2 right-2 flex items-center gap-2 px-3 py-1 rounded-full bg-primary/20 text-primary text-xs">
+                  <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+                  Generating...
+                </div>
+              )}
+              <pre className="font-mono text-sm text-foreground whitespace-pre-wrap">
+                <code>{code}</code>
+              </pre>
+            </div>
           </div>
         )}
       </div>
