@@ -1,5 +1,7 @@
 import { Code2, Eye, Copy, Download, Check, Sparkles, Maximize2, Minimize2, ExternalLink } from "lucide-react";
 import { useState, useMemo } from "react";
+import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
+import { oneDark } from "react-syntax-highlighter/dist/esm/styles/prism";
 
 interface OutputPreviewProps {
   code: string;
@@ -381,14 +383,25 @@ const OutputPreview = ({ code, isLoading }: OutputPreviewProps) => {
           <div className="h-full overflow-auto p-4">
             <div className="relative">
               {isLoading && (
-                <div className="absolute top-2 right-2 flex items-center gap-2 px-3 py-1 rounded-full bg-primary/20 text-primary text-xs">
+                <div className="absolute top-2 right-2 z-10 flex items-center gap-2 px-3 py-1 rounded-full bg-primary/20 text-primary text-xs">
                   <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
                   Generating...
                 </div>
               )}
-              <pre className="font-mono text-sm text-foreground whitespace-pre-wrap">
-                <code>{code}</code>
-              </pre>
+              <SyntaxHighlighter
+                language="tsx"
+                style={oneDark}
+                customStyle={{
+                  margin: 0,
+                  borderRadius: "0.5rem",
+                  fontSize: "0.875rem",
+                  background: "hsl(var(--secondary))",
+                }}
+                showLineNumbers
+                wrapLongLines
+              >
+                {code}
+              </SyntaxHighlighter>
             </div>
           </div>
         )}
