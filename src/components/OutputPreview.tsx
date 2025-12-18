@@ -1,7 +1,9 @@
-import { Code2, Eye, Copy, Download, Check, Sparkles, Maximize2, Minimize2, ExternalLink } from "lucide-react";
+import { Code2, Eye, Copy, Download, Check, Sparkles, Maximize2, Minimize2, ExternalLink, Rocket, Link } from "lucide-react";
 import { useState, useMemo } from "react";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { oneDark } from "react-syntax-highlighter/dist/esm/styles/prism";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 interface OutputPreviewProps {
   code: string;
@@ -218,10 +220,22 @@ export default defineConfig({
   document.body.removeChild(form);
 };
 
+// Generate random slug
+const generateSlug = (): string => {
+  const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
+  let slug = '';
+  for (let i = 0; i < 8; i++) {
+    slug += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return slug;
+};
+
 const OutputPreview = ({ code, isLoading }: OutputPreviewProps) => {
   const [activeTab, setActiveTab] = useState<"preview" | "code">("preview");
   const [copied, setCopied] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [isDeploying, setIsDeploying] = useState(false);
+  const [deployedUrl, setDeployedUrl] = useState<string | null>(null);
 
   const previewHtml = useMemo(() => {
     if (!code) return '';
@@ -244,6 +258,45 @@ const OutputPreview = ({ code, isLoading }: OutputPreviewProps) => {
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
+  };
+
+  const handleDeploy = async () => {
+    if (!code || !previewHtml) {
+      toast.error("Tidak ada kode untuk di-deploy");
+      return;
+    }
+
+    setIsDeploying(true);
+    try {
+      const slug = generateSlug();
+      
+      const { error } = await supabase
+        .from("deployed_sites")
+        .insert({
+          slug,
+          title: "AI Generated Site",
+          code,
+          html_content: previewHtml,
+        });
+
+      if (error) throw error;
+
+      const siteUrl = `${window.location.origin}/site/${slug}`;
+      setDeployedUrl(siteUrl);
+      toast.success("Website berhasil di-deploy!");
+    } catch (error) {
+      console.error("Deploy error:", error);
+      toast.error("Gagal men-deploy website");
+    } finally {
+      setIsDeploying(false);
+    }
+  };
+
+  const copyDeployedUrl = () => {
+    if (deployedUrl) {
+      navigator.clipboard.writeText(deployedUrl);
+      toast.success("URL berhasil disalin!");
+    }
   };
 
   if (!code && !isLoading) {
@@ -345,8 +398,41 @@ const OutputPreview = ({ code, isLoading }: OutputPreviewProps) => {
             <ExternalLink className="w-4 h-4" />
             StackBlitz
           </button>
+          <button 
+            onClick={handleDeploy}
+            disabled={!code || !previewHtml || isDeploying}
+            className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm bg-primary text-primary-foreground hover:bg-primary/90 transition-all disabled:opacity-50"
+          >
+            <Rocket className={`w-4 h-4 ${isDeploying ? 'animate-pulse' : ''}`} />
+            {isDeploying ? "Deploying..." : "Deploy"}
+          </button>
         </div>
       </div>
+
+      {/* Deployed URL Banner */}
+      {deployedUrl && (
+        <div className="px-4 py-2 bg-green-500/10 border-b border-green-500/20 flex items-center justify-between">
+          <div className="flex items-center gap-2 text-sm text-green-500">
+            <Check className="w-4 h-4" />
+            <span>Website live di:</span>
+            <a 
+              href={deployedUrl} 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="underline hover:text-green-400"
+            >
+              {deployedUrl}
+            </a>
+          </div>
+          <button
+            onClick={copyDeployedUrl}
+            className="flex items-center gap-1 px-2 py-1 rounded text-xs text-green-500 hover:bg-green-500/10 transition-all"
+          >
+            <Link className="w-3 h-3" />
+            Copy URL
+          </button>
+        </div>
+      )}
 
       {/* Content */}
       <div className={`${isFullscreen ? 'h-[calc(100%-60px)]' : 'h-[500px]'} overflow-hidden`}>
