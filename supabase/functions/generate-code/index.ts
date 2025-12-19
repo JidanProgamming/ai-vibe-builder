@@ -205,6 +205,11 @@ Make sure the generated app includes:
   },
 };
 
+// Valid model and category options
+const validModels = ['frontend', 'fullstack'];
+const validFrontendCategories = ['landing', 'dashboard', 'component'];
+const validFullstackCategories = ['app', 'website', 'game', 'aiapps'];
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -213,12 +218,45 @@ serve(async (req) => {
   try {
     const { prompt, model, category } = await req.json();
     
-    console.log('Received request:', { prompt: prompt?.substring(0, 100), model, category });
+    // Input validation
+    if (!prompt || typeof prompt !== 'string') {
+      return new Response(
+        JSON.stringify({ error: 'Invalid prompt: must be a non-empty string' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+    
+    if (prompt.length > 5000) {
+      return new Response(
+        JSON.stringify({ error: 'Prompt too long: maximum 5000 characters allowed' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+    
+    if (!model || typeof model !== 'string' || !validModels.includes(model)) {
+      return new Response(
+        JSON.stringify({ error: 'Invalid model: must be "frontend" or "fullstack"' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+    
+    const validCategories = model === 'frontend' ? validFrontendCategories : validFullstackCategories;
+    if (!category || typeof category !== 'string' || !validCategories.includes(category)) {
+      return new Response(
+        JSON.stringify({ error: `Invalid category for ${model} model` }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+    
+    // Sanitize input - remove control characters
+    const sanitizedPrompt = prompt.trim().replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '');
+    
+    console.log('Received validated request:', { prompt: sanitizedPrompt.substring(0, 100), model, category });
     
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
     if (!LOVABLE_API_KEY) {
       console.error('LOVABLE_API_KEY is not configured');
-      throw new Error('LOVABLE_API_KEY is not configured');
+      throw new Error('Service configuration error');
     }
 
     const modelType = model as 'frontend' | 'fullstack';
@@ -257,7 +295,7 @@ Always respond in the same language as the user's prompt.`
           },
           { 
             role: 'user', 
-            content: `Generate code for the following request:\n\n${prompt}` 
+            content: `Generate code for the following request:\n\n${sanitizedPrompt}` 
           }
         ],
         stream: true,
