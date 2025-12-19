@@ -1,4 +1,4 @@
-import { Globe, Smartphone, Gamepad2 } from "lucide-react";
+import { Globe, Smartphone, Gamepad2, Bot, MessageSquare, Brain, Sparkles } from "lucide-react";
 
 interface CategorySelectorProps {
   model: "frontend" | "fullstack";
@@ -16,13 +16,14 @@ const fullstackCategories = [
   { id: "app", label: "Aplikasi Bisnis", icon: Smartphone, desc: "CRM, POS, Booking System" },
   { id: "website", label: "Website Bisnis", icon: Globe, desc: "Landing page dengan CMS" },
   { id: "game", label: "Game Promosi", icon: Gamepad2, desc: "Mini game & gamifikasi" },
+  { id: "aiapps", label: "AI Apps", icon: Brain, desc: "Aplikasi dengan AI terintegrasi" },
 ];
 
 const CategorySelector = ({ model, selected, onSelect }: CategorySelectorProps) => {
   const categories = model === "frontend" ? frontendCategories : fullstackCategories;
 
   return (
-    <div className="grid grid-cols-3 gap-4">
+    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
       {categories.map((cat) => {
         const Icon = cat.icon;
         const isSelected = selected === cat.id;
