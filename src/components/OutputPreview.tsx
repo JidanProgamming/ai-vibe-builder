@@ -1,4 +1,4 @@
-import { Code2, Eye, Copy, Download, Check, Sparkles, Maximize2, Minimize2, ExternalLink, Rocket, Link, FolderTree, Pencil, Send } from "lucide-react";
+import { Code2, Eye, Copy, Download, Check, Sparkles, Maximize2, Minimize2, ExternalLink, Rocket, Link, FolderTree } from "lucide-react";
 import { useState, useMemo } from "react";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { oneDark } from "react-syntax-highlighter/dist/esm/styles/prism";
@@ -12,7 +12,6 @@ interface OutputPreviewProps {
   isLoading: boolean;
   category?: string;
   model?: string;
-  onEdit?: (editPrompt: string) => void;
 }
 
 const extractHtmlFromCode = (code: string): string => {
@@ -223,15 +222,13 @@ const generateSlug = (): string => {
   return slug;
 };
 
-const OutputPreview = ({ code, isLoading, category, model, onEdit }: OutputPreviewProps) => {
+const OutputPreview = ({ code, isLoading, category, model }: OutputPreviewProps) => {
   const [activeTab, setActiveTab] = useState<"preview" | "code" | "files">("preview");
   const [copied, setCopied] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isDeploying, setIsDeploying] = useState(false);
   const [deployedUrl, setDeployedUrl] = useState<string | null>(null);
   const [selectedFile, setSelectedFile] = useState<FileItem | null>(null);
-  const [editPrompt, setEditPrompt] = useState("");
-  const [showEditBar, setShowEditBar] = useState(false);
 
   const previewHtml = useMemo(() => {
     if (!code) return '';
@@ -620,59 +617,6 @@ ReactDOM.createRoot(document.getElementById('root')).render(
           </div>
         )}
       </div>
-
-      {/* Edit Bar */}
-      {code && !isLoading && onEdit && (
-        <div className="border-t border-border/50 px-4 py-3">
-          {!showEditBar ? (
-            <button
-              onClick={() => setShowEditBar(true)}
-              className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-muted-foreground hover:bg-secondary transition-all w-full justify-center"
-            >
-              <Pencil className="w-4 h-4" />
-              Edit / Perbaiki Website
-            </button>
-          ) : (
-            <div className="flex gap-2">
-              <input
-                type="text"
-                value={editPrompt}
-                onChange={(e) => setEditPrompt(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' && editPrompt.trim()) {
-                    onEdit(editPrompt);
-                    setEditPrompt("");
-                    setShowEditBar(false);
-                  }
-                }}
-                placeholder="Jelaskan perubahan yang ingin dilakukan, misal: Perbaiki gambar hero, ubah warna jadi biru..."
-                className="flex-1 bg-secondary/50 border border-border/50 rounded-lg px-4 py-2 text-sm text-foreground placeholder:text-muted-foreground outline-none focus:ring-2 focus:ring-primary/50"
-                autoFocus
-              />
-              <button
-                onClick={() => {
-                  if (editPrompt.trim()) {
-                    onEdit(editPrompt);
-                    setEditPrompt("");
-                    setShowEditBar(false);
-                  }
-                }}
-                disabled={!editPrompt.trim()}
-                className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium bg-primary text-primary-foreground hover:bg-primary/90 transition-all disabled:opacity-50"
-              >
-                <Send className="w-4 h-4" />
-                Kirim
-              </button>
-              <button
-                onClick={() => { setShowEditBar(false); setEditPrompt(""); }}
-                className="px-3 py-2 rounded-lg text-sm text-muted-foreground hover:bg-secondary transition-all"
-              >
-                Batal
-              </button>
-            </div>
-          )}
-        </div>
-      )}
     </div>
   );
 };

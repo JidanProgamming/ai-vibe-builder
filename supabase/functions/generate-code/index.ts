@@ -173,7 +173,7 @@ serve(async (req) => {
   }
 
   try {
-    const { prompt, model, category, existingCode } = await req.json();
+    const { prompt, model, category } = await req.json();
     
     // Input validation
     if (!prompt || typeof prompt !== 'string') {
@@ -250,13 +250,10 @@ Output format:
 
 Always respond in the same language as the user's prompt.`
           },
-          ...(existingCode ? [
-            { role: 'user' as const, content: `Generate code for the following request:\n\n${sanitizedPrompt}` },
-            { role: 'assistant' as const, content: existingCode },
-            { role: 'user' as const, content: `Please edit and improve the code above based on this feedback. Keep the same overall structure but fix/change what is requested. Return the COMPLETE updated code (not just the changes):\n\n${sanitizedPrompt}` },
-          ] : [
-            { role: 'user' as const, content: `Generate code for the following request:\n\n${sanitizedPrompt}` },
-          ])
+          { 
+            role: 'user', 
+            content: `Generate code for the following request:\n\n${sanitizedPrompt}` 
+          }
         ],
         stream: true,
       }),
