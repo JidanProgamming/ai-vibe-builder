@@ -6,22 +6,36 @@ const corsHeaders = {
 };
 
 const IMAGE_INSTRUCTIONS = `
-IMPORTANT IMAGE GUIDELINES:
-- Always include beautiful, relevant images in the generated website using Unsplash URLs
-- Use this format: https://images.unsplash.com/photo-{ID}?w={width}&h={height}&fit=crop
-- Popular photo IDs to use:
-  - Business/Tech: photo-1460925895917-afdab827c52f, photo-1519389950473-47ba0277781c, photo-1551434678-e076c223a692
-  - Food: photo-1504674900247-0877df9cc836, photo-1565299624946-b28f40a0ae38
-  - Nature: photo-1470071459604-3b5ec3a7fe05, photo-1441974231531-c6227db76b6e
-  - People/Team: photo-1522071820081-009f0129c71c, photo-1600880292203-757bb62b4baf
-  - Health: photo-1571019614242-c5c5dee9f50b, photo-1576091160399-112ba8d25d1d
-  - Education: photo-1503676260728-1c00da094a0b, photo-1523050854058-8df90110c9f1
-  - Real Estate: photo-1560518883-ce09059eeffa, photo-1582407947092-89c3a1a82144
-  - Fashion: photo-1445205170230-053b83016050, photo-1558618666-fcd25c85f82e
-- Use <img> tags with proper alt text, object-fit: cover, and rounded corners
-- Include hero images, section images, testimonial avatars, product photos etc.
-- For avatar/profile pics use: https://i.pravatar.cc/150?img={1-70}
-- Make images responsive with proper sizing classes
+CRITICAL IMAGE RULES - READ CAREFULLY:
+1. ONLY use images that are DIRECTLY relevant to the user's prompt/request. Do NOT add random decorative images.
+2. Every <img> tag MUST have a working src URL. NEVER leave placeholder or empty src.
+3. Use ONLY these reliable image sources:
+   a. Unsplash (PREFERRED): https://images.unsplash.com/photo-{EXACT_ID}?w={width}&h={height}&fit=crop
+   b. Pravatar for avatars: https://i.pravatar.cc/150?img={1-70}
+   c. Picsum for generic photos: https://picsum.photos/{width}/{height}?random={number}
+4. VERIFIED Unsplash photo IDs (use ONLY these, do NOT invent IDs):
+   - Business/Office: photo-1460925895917-afdab827c52f, photo-1519389950473-47ba0277781c, photo-1551434678-e076c223a692
+   - Food/Restaurant: photo-1504674900247-0877df9cc836, photo-1565299624946-b28f40a0ae38, photo-1414235077428-338989a2e8c0
+   - Nature/Landscape: photo-1470071459604-3b5ec3a7fe05, photo-1441974231531-c6227db76b6e, photo-1506744038136-46273834b3fb
+   - People/Team: photo-1522071820081-009f0129c71c, photo-1600880292203-757bb62b4baf, photo-1573496359142-b8d87734a5a2
+   - Health/Fitness: photo-1571019614242-c5c5dee9f50b, photo-1576091160399-112ba8d25d1d
+   - Education: photo-1503676260728-1c00da094a0b, photo-1523050854058-8df90110c9f1
+   - Real Estate: photo-1560518883-ce09059eeffa, photo-1582407947092-89c3a1a82144
+   - Fashion: photo-1445205170230-053b83016050, photo-1558618666-fcd25c85f82e
+   - Technology: photo-1518770660439-4636190af475, photo-1550751827-4bd374c3f58b
+   - Travel: photo-1488646953014-85cb44e25828, photo-1507525428034-b723cf961d3e
+   - E-commerce/Shopping: photo-1441986300917-64674bd600d8, photo-1472851294608-062f824d29cc
+   - Medical: photo-1579684385127-1ef15d508118, photo-1631217868264-e5b90bb7e133
+   - Automotive: photo-1494976388531-d1058494cdd8, photo-1583121274602-3e2820c69888
+   - Pet/Animal: photo-1543466835-00a7907e9de1, photo-1548199973-03cce0bbc87b
+5. ALL images must have: alt text, object-fit: cover, rounded corners, responsive width
+6. For hero sections use large images (w=1200&h=600), for cards use medium (w=600&h=400), for thumbnails use small (w=300&h=200)
+7. If the prompt is about a SPECIFIC topic, choose images that match that topic. For example:
+   - Restaurant website → use food images
+   - Tech startup → use technology/office images  
+   - Portfolio → use relevant work images
+8. If no verified Unsplash ID matches the topic, use Picsum: https://picsum.photos/800/400?random=1
+9. NEVER use broken URLs, placeholder.com, via.placeholder.com, or made-up image URLs
 `;
 
 const systemPrompts = {
