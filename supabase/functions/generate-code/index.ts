@@ -5,10 +5,30 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+const IMAGE_INSTRUCTIONS = `
+IMPORTANT IMAGE GUIDELINES:
+- Always include beautiful, relevant images in the generated website using Unsplash URLs
+- Use this format: https://images.unsplash.com/photo-{ID}?w={width}&h={height}&fit=crop
+- Popular photo IDs to use:
+  - Business/Tech: photo-1460925895917-afdab827c52f, photo-1519389950473-47ba0277781c, photo-1551434678-e076c223a692
+  - Food: photo-1504674900247-0877df9cc836, photo-1565299624946-b28f40a0ae38
+  - Nature: photo-1470071459604-3b5ec3a7fe05, photo-1441974231531-c6227db76b6e
+  - People/Team: photo-1522071820081-009f0129c71c, photo-1600880292203-757bb62b4baf
+  - Health: photo-1571019614242-c5c5dee9f50b, photo-1576091160399-112ba8d25d1d
+  - Education: photo-1503676260728-1c00da094a0b, photo-1523050854058-8df90110c9f1
+  - Real Estate: photo-1560518883-ce09059eeffa, photo-1582407947092-89c3a1a82144
+  - Fashion: photo-1445205170230-053b83016050, photo-1558618666-fcd25c85f82e
+- Use <img> tags with proper alt text, object-fit: cover, and rounded corners
+- Include hero images, section images, testimonial avatars, product photos etc.
+- For avatar/profile pics use: https://i.pravatar.cc/150?img={1-70}
+- Make images responsive with proper sizing classes
+`;
+
 const systemPrompts = {
   frontend: {
     landing: `You are an expert frontend developer specializing in modern web development.
 Generate beautiful, modern, and responsive landing page code.
+${IMAGE_INSTRUCTIONS}
 
 IMPORTANT: Always provide BOTH formats:
 1. First, provide a complete standalone HTML file with inline CSS and Tailwind CDN that can be previewed immediately
@@ -17,7 +37,7 @@ IMPORTANT: Always provide BOTH formats:
 For the HTML version:
 - Include <!DOCTYPE html> with full structure
 - Use Tailwind CSS via CDN: <script src="https://cdn.tailwindcss.com"></script>
-- Make it fully responsive and beautiful
+- Make it fully responsive and beautiful with real images from Unsplash
 - Use modern design patterns with gradients, shadows, and animations
 
 For the React version:
@@ -27,35 +47,39 @@ For the React version:
 
     dashboard: `You are an expert frontend developer specializing in admin dashboards.
 Generate clean, professional dashboard UI.
+${IMAGE_INSTRUCTIONS}
 
 IMPORTANT: Always provide BOTH formats:
 1. First, a complete standalone HTML file with Tailwind CDN for immediate preview
 2. Then, the React/TypeScript component version
 
-Include charts placeholders, tables, stats cards, and navigation.`,
+Include charts placeholders, tables, stats cards, navigation, and avatar images.`,
 
     component: `You are an expert React component developer.
 Generate reusable, well-structured components.
+${IMAGE_INSTRUCTIONS}
 
 IMPORTANT: Always provide BOTH formats:
-1. First, a complete standalone HTML file with Tailwind CDN showing the component
+1. First, a complete standalone HTML file with Tailwind CDN showing the component with images
 2. Then, the React/TypeScript version with proper props interfaces`,
   },
   fullstack: {
     app: `You are a fullstack developer expert in building business applications.
 Generate complete application code.
+${IMAGE_INSTRUCTIONS}
 
 IMPORTANT: Always provide:
-1. First, a complete standalone HTML file with Tailwind CDN for UI preview
+1. First, a complete standalone HTML file with Tailwind CDN for UI preview with real images
 2. Then, React frontend components
 3. Finally, backend API structure and database schema suggestions`,
 
     website: `You are a fullstack web developer specializing in business websites.
 Generate SEO-optimized business landing pages.
+${IMAGE_INSTRUCTIONS}
 
 IMPORTANT: Always provide:
 1. First, a complete standalone HTML file with Tailwind CDN - this is the main deliverable
-2. Include compelling copywriting, CTAs, and modern design
+2. Include compelling copywriting, CTAs, modern design, and high-quality images from Unsplash
 3. Then optionally provide React component versions`,
 
     game: `You are a creative developer specializing in promotional mini-games.
@@ -64,144 +88,63 @@ Generate interactive game code.
 IMPORTANT: Always provide:
 1. First, a complete standalone HTML file with the game working - include JavaScript for interactivity
 2. Make sure the game is fully functional in the preview
-3. Include scoring, animations, and engaging UI
+3. Include scoring, animations, and engaging UI with themed images
 4. Optionally provide React version`,
 
-    aiapps: `You are a fullstack developer expert in building AI-powered applications.
+    aiapps: `You are a fullstack developer expert in building AI-powered applications and AI tools.
 Generate complete AI application code with REAL AI functionality.
+${IMAGE_INSTRUCTIONS}
 
-CRITICAL: The AI functionality MUST be real and working. Use this pattern:
+The generated AI app should be a MULTI-MODAL AI TOOL that can:
+- Generate TEXT (articles, copywriting, code, translations, summaries, etc.)
+- Generate IMAGES (using the AI image generation endpoint)
+- Process and analyze content
+- Provide chat/assistant functionality
 
-1. First, provide a complete standalone HTML file with working AI chat/functionality:
+CRITICAL: The AI functionality MUST be real and working. Use these patterns:
 
-\`\`\`html
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AI App</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-</head>
-<body class="bg-gray-900 text-white min-h-screen">
-  <div id="app" class="container mx-auto p-4 max-w-4xl">
-    <h1 class="text-3xl font-bold text-center mb-8">AI Assistant</h1>
-    <div id="chat-container" class="bg-gray-800 rounded-lg p-4 mb-4 h-96 overflow-y-auto"></div>
-    <div class="flex gap-2">
-      <input type="text" id="user-input" placeholder="Ask me anything..." class="flex-1 bg-gray-700 rounded-lg px-4 py-2 outline-none focus:ring-2 focus:ring-blue-500">
-      <button onclick="sendMessage()" class="bg-blue-600 hover:bg-blue-700 px-6 py-2 rounded-lg font-medium">Send</button>
-    </div>
-  </div>
-  
-  <script>
-    const API_URL = 'https://qubwfxzldgzieectpulm.supabase.co/functions/v1/ai-chat';
-    const chatContainer = document.getElementById('chat-container');
-    const userInput = document.getElementById('user-input');
-    
-    async function sendMessage() {
-      const message = userInput.value.trim();
-      if (!message) return;
-      
-      // Add user message
-      addMessage(message, 'user');
-      userInput.value = '';
-      
-      // Show loading
-      const loadingId = 'loading-' + Date.now();
-      addMessage('Thinking...', 'assistant', loadingId);
-      
-      try {
-        const response = await fetch(API_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ message })
-        });
-        
-        const data = await response.json();
-        
-        // Remove loading and add response
-        document.getElementById(loadingId)?.remove();
-        addMessage(data.response || data.error || 'No response', 'assistant');
-      } catch (error) {
-        document.getElementById(loadingId)?.remove();
-        addMessage('Error: Could not get response', 'assistant');
-      }
-    }
-    
-    function addMessage(text, role, id) {
-      const div = document.createElement('div');
-      if (id) div.id = id;
-      div.className = \`mb-3 p-3 rounded-lg \${role === 'user' ? 'bg-blue-600 ml-12' : 'bg-gray-700 mr-12'}\`;
-      div.textContent = text;
-      chatContainer.appendChild(div);
-      chatContainer.scrollTop = chatContainer.scrollHeight;
-    }
-    
-    userInput.addEventListener('keypress', (e) => {
-      if (e.key === 'Enter') sendMessage();
-    });
-  </script>
-</body>
-</html>
-\`\`\`
-
-2. Then provide the Supabase Edge Function code:
-
-\`\`\`typescript
-// supabase/functions/ai-chat/index.ts
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
-
-serve(async (req) => {
-  if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
-  }
-
-  try {
-    const { message } = await req.json();
-    const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
-
-    const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': \`Bearer \${LOVABLE_API_KEY}\`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'google/gemini-2.5-flash',
-        messages: [
-          { role: 'system', content: 'You are a helpful AI assistant.' },
-          { role: 'user', content: message }
-        ],
-      }),
-    });
-
-    const data = await response.json();
-    const aiResponse = data.choices?.[0]?.message?.content || 'No response';
-
-    return new Response(JSON.stringify({ response: aiResponse }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
-  } catch (error) {
-    return new Response(JSON.stringify({ error: error.message }), {
-      status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
-  }
+For TEXT generation - use the chat completions endpoint:
+\`\`\`javascript
+const response = await fetch('https://qubwfxzldgzieectpulm.supabase.co/functions/v1/ai-chat', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ message: userPrompt, type: 'text' })
 });
+const data = await response.json();
+// data.response contains the generated text
 \`\`\`
 
-3. Then provide React components if needed.
+For IMAGE generation - use the image generation endpoint:
+\`\`\`javascript
+const response = await fetch('https://qubwfxzldgzieectpulm.supabase.co/functions/v1/ai-chat', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ message: imagePrompt, type: 'image' })
+});
+const data = await response.json();
+// data.image contains base64 image data URL
+// Display with: <img src={data.image} />
+\`\`\`
+
+Generate a COMPLETE, BEAUTIFUL AI tool app with:
+1. A complete standalone HTML file with tabs/sections for different AI capabilities:
+   - Text Generator (articles, copywriting, code, etc.)
+   - Image Generator (create images from text descriptions)
+   - Chat Assistant (conversational AI)
+2. Modern, polished UI with proper loading states, error handling
+3. Results display area that properly renders text and images
+4. History/gallery of generated content
+5. Clean design with Tailwind CSS
+
+Then provide the backend edge function code that handles both text and image generation.
 
 Make sure the generated app includes:
-- Clean, modern UI with Tailwind CSS
-- Real AI integration using the Lovable AI Gateway
-- Proper error handling
-- Loading states`,
+- Clean, modern UI with Tailwind CSS and real images
+- Real AI integration using the API endpoints above
+- Tabs or sections for Text, Image, and Chat modes
+- Proper error handling for rate limits (429) and payment errors (402)
+- Loading states with animations
+- Gallery/history of generated content`,
   },
 };
 
