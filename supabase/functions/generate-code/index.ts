@@ -5,129 +5,105 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-const buildImageInstructions = (aiImages: Record<string, string> = {}) => {
-  const hasAiImages = Object.keys(aiImages).length > 0;
-  
-  const aiImageSection = hasAiImages ? `
-AI-GENERATED IMAGES AVAILABLE (USE THESE FIRST - these are custom generated for this website):
-${Object.entries(aiImages).map(([id, url]) => `- ${id}: src="${url}" (use this as <img src="${url}" ...>)`).join('\n')}
+const IMAGE_INSTRUCTIONS = `
+IMPORTANT IMAGE GUIDELINES:
+- Always include beautiful, relevant images in the generated website using Unsplash URLs
+- Use this format: https://images.unsplash.com/photo-{ID}?w={width}&h={height}&fit=crop
+- Popular photo IDs to use:
+  - Business/Tech: photo-1460925895917-afdab827c52f, photo-1519389950473-47ba0277781c, photo-1551434678-e076c223a692
+  - Food: photo-1504674900247-0877df9cc836, photo-1565299624946-b28f40a0ae38
+  - Nature: photo-1470071459604-3b5ec3a7fe05, photo-1441974231531-c6227db76b6e
+  - People/Team: photo-1522071820081-009f0129c71c, photo-1600880292203-757bb62b4baf
+  - Health: photo-1571019614242-c5c5dee9f50b, photo-1576091160399-112ba8d25d1d
+  - Education: photo-1503676260728-1c00da094a0b, photo-1523050854058-8df90110c9f1
+  - Real Estate: photo-1560518883-ce09059eeffa, photo-1582407947092-89c3a1a82144
+  - Fashion: photo-1445205170230-053b83016050, photo-1558618666-fcd25c85f82e
+- Use <img> tags with proper alt text, object-fit: cover, and rounded corners
+- Include hero images, section images, testimonial avatars, product photos etc.
+- For avatar/profile pics use: https://i.pravatar.cc/150?img={1-70}
+- Make images responsive with proper sizing classes
+`;
 
-CRITICAL: You MUST use ALL of the AI-generated images listed above in the website. Place them in the most appropriate sections.
-- "logo" image → use in header/navbar as the brand logo
-- "hero" image → use in the hero/banner section as the main visual
-- "product" or "service" images → use in features/about sections
-- "team" or "about" images → use in team/about sections
-` : '';
-
-  return `
-CRITICAL IMAGE RULES:
-${aiImageSection}
-${hasAiImages ? 'For any ADDITIONAL images not covered by AI-generated ones:' : ''}
-1. Use ONLY images DIRECTLY relevant to the user's prompt. Do NOT add random decorative images.
-2. Every <img> tag MUST have a working src URL. NEVER leave placeholder or empty src.
-3. For fallback images use ONLY these reliable sources:
-   a. Unsplash: https://images.unsplash.com/photo-{EXACT_ID}?w={width}&h={height}&fit=crop
-   b. Pravatar for avatars: https://i.pravatar.cc/150?img={1-70}
-   c. Picsum: https://picsum.photos/{width}/{height}?random={number}
-4. VERIFIED Unsplash IDs by category:
-   - Business/Office: photo-1460925895917-afdab827c52f, photo-1519389950473-47ba0277781c
-   - Food/Restaurant: photo-1504674900247-0877df9cc836, photo-1565299624946-b28f40a0ae38
-   - Nature: photo-1470071459604-3b5ec3a7fe05, photo-1441974231531-c6227db76b6e
-   - People/Team: photo-1522071820081-009f0129c71c, photo-1600880292203-757bb62b4baf
-   - Technology: photo-1518770660439-4636190af475, photo-1550751827-4bd374c3f58b
-   - Fashion: photo-1445205170230-053b83016050, photo-1558618666-fcd25c85f82e
-   - Medical: photo-1579684385127-1ef15d508118, photo-1631217868264-e5b90bb7e133
-   - Real Estate: photo-1560518883-ce09059eeffa, photo-1582407947092-89c3a1a82144
-5. ALL images must have: descriptive alt text, object-fit: cover, responsive width
-6. For hero sections: w=1200&h=600, cards: w=600&h=400, thumbnails: w=300&h=200
-7. NEVER use broken URLs, placeholder.com, or made-up image IDs
-`;};
-
-const buildSystemPrompts = (aiImages: Record<string, string> = {}) => {
-  const imageInstructions = buildImageInstructions(aiImages);
-  
-  return {
-    frontend: {
-      landing: `You are an expert frontend developer specializing in modern web development.
-Generate beautiful, modern, PROFESSIONAL and responsive landing page code.
-${imageInstructions}
+const systemPrompts = {
+  frontend: {
+    landing: `You are an expert frontend developer specializing in modern web development.
+Generate beautiful, modern, and responsive landing page code.
+${IMAGE_INSTRUCTIONS}
 
 IMPORTANT: Always provide BOTH formats:
-1. First, a COMPLETE standalone HTML file with Tailwind CDN that can be previewed immediately
-2. Then, the React/TypeScript component version
+1. First, provide a complete standalone HTML file with inline CSS and Tailwind CDN that can be previewed immediately
+2. Then, provide the React/TypeScript component version
 
 For the HTML version:
 - Include <!DOCTYPE html> with full structure
 - Use Tailwind CSS via CDN: <script src="https://cdn.tailwindcss.com"></script>
-- Make it fully responsive and beautiful with high-quality professional design
+- Make it fully responsive and beautiful with real images from Unsplash
 - Use modern design patterns with gradients, shadows, and animations
-- MUST include all AI-generated images provided above in appropriate sections
 
 For the React version:
 - Use TypeScript and proper component structure
 - Include all necessary imports
 - Add helpful comments`,
 
-      dashboard: `You are an expert frontend developer specializing in admin dashboards.
+    dashboard: `You are an expert frontend developer specializing in admin dashboards.
 Generate clean, professional dashboard UI.
-${imageInstructions}
+${IMAGE_INSTRUCTIONS}
 
 IMPORTANT: Always provide BOTH formats:
 1. First, a complete standalone HTML file with Tailwind CDN for immediate preview
 2. Then, the React/TypeScript component version
 
-Include charts placeholders, tables, stats cards, navigation, and use AI-generated images for avatars/branding.`,
+Include charts placeholders, tables, stats cards, navigation, and avatar images.`,
 
-      component: `You are an expert React component developer.
+    component: `You are an expert React component developer.
 Generate reusable, well-structured components.
-${imageInstructions}
+${IMAGE_INSTRUCTIONS}
 
 IMPORTANT: Always provide BOTH formats:
-1. First, a complete standalone HTML file with Tailwind CDN showing the component
+1. First, a complete standalone HTML file with Tailwind CDN showing the component with images
 2. Then, the React/TypeScript version with proper props interfaces`,
-    },
-    fullstack: {
-      app: `You are a fullstack developer expert in building business applications.
+  },
+  fullstack: {
+    app: `You are a fullstack developer expert in building business applications.
 Generate complete application code.
-${imageInstructions}
+${IMAGE_INSTRUCTIONS}
 
 IMPORTANT: Always provide:
-1. First, a complete standalone HTML file with Tailwind CDN for UI preview
+1. First, a complete standalone HTML file with Tailwind CDN for UI preview with real images
 2. Then, React frontend components
 3. Finally, backend API structure and database schema suggestions`,
 
-      website: `You are a fullstack web developer specializing in business websites.
-Generate SEO-optimized, PROFESSIONAL business landing pages.
-${imageInstructions}
+    website: `You are a fullstack web developer specializing in business websites.
+Generate SEO-optimized business landing pages.
+${IMAGE_INSTRUCTIONS}
 
 IMPORTANT: Always provide:
 1. First, a complete standalone HTML file with Tailwind CDN - this is the main deliverable
-2. Include compelling copywriting, CTAs, modern design, and use ALL provided AI-generated images
+2. Include compelling copywriting, CTAs, modern design, and high-quality images from Unsplash
 3. Then optionally provide React component versions`,
 
-      game: `You are a creative developer specializing in promotional mini-games.
+    game: `You are a creative developer specializing in promotional mini-games.
 Generate interactive game code.
 
 IMPORTANT: Always provide:
 1. First, a complete standalone HTML file with the game working - include JavaScript for interactivity
 2. Make sure the game is fully functional in the preview
-3. Include scoring, animations, and engaging UI
+3. Include scoring, animations, and engaging UI with themed images
 4. Optionally provide React version`,
 
-      aiapps: `You are a fullstack developer expert in building AI-powered applications and AI tools.
+    aiapps: `You are a fullstack developer expert in building AI-powered applications and AI tools.
 Generate complete AI application code with REAL AI functionality.
-${imageInstructions}
+${IMAGE_INSTRUCTIONS}
 
 The generated AI app should be a MULTI-MODAL AI TOOL that can:
 - Generate TEXT (articles, copywriting, code, translations, summaries, etc.)
 - Generate IMAGES (using the AI image generation endpoint)
-- Generate VIDEO descriptions
 - Process and analyze content
 - Provide chat/assistant functionality
 
 CRITICAL: The AI functionality MUST be real and working. Use these patterns:
 
-For TEXT generation:
+For TEXT generation - use the chat completions endpoint:
 \`\`\`javascript
 const response = await fetch('https://qubwfxzldgzieectpulm.supabase.co/functions/v1/ai-chat', {
   method: 'POST',
@@ -138,7 +114,7 @@ const data = await response.json();
 // data.response contains the generated text
 \`\`\`
 
-For IMAGE generation:
+For IMAGE generation - use the image generation endpoint:
 \`\`\`javascript
 const response = await fetch('https://qubwfxzldgzieectpulm.supabase.co/functions/v1/ai-chat', {
   method: 'POST',
@@ -151,16 +127,25 @@ const data = await response.json();
 \`\`\`
 
 Generate a COMPLETE, BEAUTIFUL AI tool app with:
-1. A complete standalone HTML file with tabs for:
+1. A complete standalone HTML file with tabs/sections for different AI capabilities:
    - Text Generator (articles, copywriting, code, etc.)
    - Image Generator (create images from text descriptions)
    - Chat Assistant (conversational AI)
 2. Modern, polished UI with proper loading states, error handling
 3. Results display area that properly renders text and images
 4. History/gallery of generated content
-5. Clean design with Tailwind CSS and use provided AI-generated images for branding`,
-    },
-  };
+5. Clean design with Tailwind CSS
+
+Then provide the backend edge function code that handles both text and image generation.
+
+Make sure the generated app includes:
+- Clean, modern UI with Tailwind CSS and real images
+- Real AI integration using the API endpoints above
+- Tabs or sections for Text, Image, and Chat modes
+- Proper error handling for rate limits (429) and payment errors (402)
+- Loading states with animations
+- Gallery/history of generated content`,
+  },
 };
 
 // Valid model and category options
@@ -174,7 +159,7 @@ serve(async (req) => {
   }
 
   try {
-    const { prompt, model, category, aiImages } = await req.json();
+    const { prompt, model, category } = await req.json();
     
     // Input validation
     if (!prompt || typeof prompt !== 'string') {
@@ -206,13 +191,10 @@ serve(async (req) => {
       );
     }
     
-    // Sanitize input
+    // Sanitize input - remove control characters
     const sanitizedPrompt = prompt.trim().replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '');
     
-    // Use AI-generated images if provided
-    const imageMap: Record<string, string> = (aiImages && typeof aiImages === 'object') ? aiImages : {};
-    const hasAiImages = Object.keys(imageMap).length > 0;
-    console.log(`Request with ${Object.keys(imageMap).length} AI images:`, Object.keys(imageMap));
+    console.log('Received validated request:', { prompt: sanitizedPrompt.substring(0, 100), model, category });
     
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
     if (!LOVABLE_API_KEY) {
@@ -221,21 +203,16 @@ serve(async (req) => {
     }
 
     const modelType = model as 'frontend' | 'fullstack';
-    const prompts = buildSystemPrompts(imageMap);
+    const categoryType = category as keyof typeof systemPrompts.frontend | keyof typeof systemPrompts.fullstack;
     
-    type FrontendCat = keyof typeof prompts.frontend;
-    type FullstackCat = keyof typeof prompts.fullstack;
-    
-    let systemPrompt = prompts.frontend.landing;
-    if (modelType === 'frontend' && category in prompts.frontend) {
-      systemPrompt = prompts.frontend[category as FrontendCat];
-    } else if (modelType === 'fullstack' && category in prompts.fullstack) {
-      systemPrompt = prompts.fullstack[category as FullstackCat];
+    let systemPrompt = systemPrompts.frontend.landing;
+    if (modelType === 'frontend' && categoryType in systemPrompts.frontend) {
+      systemPrompt = systemPrompts.frontend[categoryType as keyof typeof systemPrompts.frontend];
+    } else if (modelType === 'fullstack' && categoryType in systemPrompts.fullstack) {
+      systemPrompt = systemPrompts.fullstack[categoryType as keyof typeof systemPrompts.fullstack];
     }
 
-    console.log('Using prompt for:', modelType, category, hasAiImages ? '(with AI images)' : '');
-
-    const userContent = `Generate code for the following request:\n\n${sanitizedPrompt}${hasAiImages ? `\n\nIMPORTANT: Use ALL of these AI-generated images in the website:\n${Object.entries(imageMap).map(([id, url]) => `- ${id}: "${url}"`).join('\n')}` : ''}`;
+    console.log('Using system prompt for:', modelType, categoryType);
 
     const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
@@ -259,7 +236,10 @@ Output format:
 
 Always respond in the same language as the user's prompt.`
           },
-          { role: 'user', content: userContent }
+          { 
+            role: 'user', 
+            content: `Generate code for the following request:\n\n${sanitizedPrompt}` 
+          }
         ],
         stream: true,
       }),
@@ -306,4 +286,3 @@ Always respond in the same language as the user's prompt.`
     });
   }
 });
-

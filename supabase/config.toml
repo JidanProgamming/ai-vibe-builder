@@ -3,9 +3,6 @@ project_id = "qubwfxzldgzieectpulm"
 [functions.generate-code]
 verify_jwt = false
 
-[functions.generate-images]
-verify_jwt = false
-
 [functions.serve-site]
 verify_jwt = false
 
