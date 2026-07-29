@@ -1,0 +1,106 @@
+{
+  "version": 1,
+  "sdk_version": "0.25.0",
+  "path": "/functions/v1/mcp",
+  "auth": {
+    "type": "none"
+  },
+  "mcp": {
+    "server": {
+      "name": "generative-digital-lab-mcp",
+      "version": "0.1.0",
+      "title": "Generative Digital Lab"
+    },
+    "tools": [
+      {
+        "name": "generate_code",
+        "title": "Generate code",
+        "description": "Generate a complete, runnable standalone HTML page (Tailwind CDN) plus a React/TypeScript version for a described project.",
+        "annotations": {
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "prompt": {
+              "type": "string",
+              "description": "What to build, in any language."
+            },
+            "category": {
+              "type": "string",
+              "enum": [
+                "landing",
+                "dashboard",
+                "component",
+                "app",
+                "website",
+                "game",
+                "aiapps"
+              ],
+              "description": "The kind of project to generate."
+            }
+          },
+          "required": [
+            "prompt",
+            "category"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "generate_text",
+        "title": "Generate text",
+        "description": "Generate written content — articles, copywriting, summaries, translations — with this app's AI assistant.",
+        "annotations": {
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "prompt": {
+              "type": "string",
+              "description": "What text to write, in any language."
+            }
+          },
+          "required": [
+            "prompt"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "generate_image",
+        "title": "Generate image",
+        "description": "Create an image from a text description using this app's AI image model.",
+        "annotations": {
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "prompt": {
+              "type": "string",
+              "description": "Description of the image to create."
+            }
+          },
+          "required": [
+            "prompt"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      }
+    ]
+  }
+}
